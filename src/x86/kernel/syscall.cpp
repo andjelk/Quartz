@@ -1,10 +1,13 @@
 #include "syscall.hpp"
 #include "video.hpp"
 #include "mmngr.hpp"
+#include "storage.hpp"
+#include "pcdevice.hpp"
 #include "deviceproc.hpp"
+
 void* sysCalls[] =
 {
-	setchvt, svtcur, k_phys_malloc, k_phys_free, getDevAttr, devinstallstate
+	getTicks, kmalloc, kfree, getDev, storWriteByte, storReadByte, storWriteFile, storReadFile, getDevFile
 };
 /*
 Parameters are being passed by registers in following order:

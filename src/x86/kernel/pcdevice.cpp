@@ -50,11 +50,12 @@ struct idte
 	unsigned short offset_high;
 };
 #include<stdio.hpp>
-void defIdtHandler(unsigned eflags, unsigned cs, unsigned eip, unsigned error)
+void defIdtHandler()
 {
 	_asm
 	{
-		pusha
+		pushad
+		pushfd
 	}
 	puts("[Warning] >>> Default Interrupt Handler Executed.\n");
 #ifndef IGNORE_DEFAULT_IH
@@ -66,8 +67,9 @@ void defIdtHandler(unsigned eflags, unsigned cs, unsigned eip, unsigned error)
 #endif
 	_asm
 	{
-		popa
-		iret
+		popfd
+		popad
+		iretd
 	}
 }
 
@@ -182,14 +184,14 @@ _declspec(naked) void pit_irqHandler()
 {
 	_asm
 	{
-		add esp, 12
 		pushad
+		pushfd
 	}
-	putchar('r');
 	_tckc[0]++;
 	intend(0);
 	_asm
 	{
+		popfd
 		popad
 		iretd
 	}
@@ -212,6 +214,8 @@ inline void intend(unsigned i)
 }
 #include"exceptionfunc.hpp"
 #include<string.hpp>
+#include"syscall.hpp"
+extern "C" {void initFpu(); }
 int load_dts()
 {
 	/*GDT*/	{
@@ -243,11 +247,12 @@ int load_dts()
 		setint(17, alignment_check_fault, DEFIRQATTR);
 		setint(18, machine_check_abort, DEFIRQATTR);
 		setint(19, simd_fpu_fault, DEFIRQATTR);
-
+		setint(0x90, sysCallIntHandler, DEFIRQATTR); //System calls
 		setint(PIC1_ADDR + 0x00, pit_irqHandler, DEFIRQATTR);
 		idtr.size = lastIdte * 8 - 1;
 		_asm lidt[idtr]
 	}
+	/*FPU*/ initFpu();
 	/*PIC*/ {
 		sendBothPicBfhl(x86_PIC_ICW1_MASK_INIT | x86_PIC_ICW1_MASK_IC4);
 		sendPicData(PIC1_ADDR, PIC2_ADDR);
@@ -256,15 +261,18 @@ int load_dts()
 		sendPicData(icw4, icw4);
 	}
 	/*PIT*/ {
-		pit_initCounter(1000, 0, x86_PIT_OCW_MODE_SQUAREWAVEGEN);
+		pit_initCounter(100, 0, x86_PIT_OCW_MODE_SQUAREWAVEGEN);
 		_asm sti
 	}
 	return 0;
 };
-int initPcStdRoutines(unsigned long long* _attr, int* _dev_arg)
+int initPcStdRoutines(extendDevInfo *ex)
 {
 	int result = load_dts();
-	if(!result)result=init_mmngr(_dev_arg[0]);
-	else return result;
+	if (!result)result = init_mmngr(ex->devAttr[0]);
 	return result;
 };
+unsigned getTicks()
+{
+	return _tckc[0];
+}

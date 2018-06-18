@@ -1,9 +1,15 @@
 #include"fdc.hpp"
-void lba_2_chs(unsigned lba, unsigned short* cyl, unsigned short* head, unsigned short* sector, floppyDrv* f)
+struct chs
 {
-	*cyl = lba / (2 * f->SectorsPerTrack);
-	*head = ((lba % (2 * f->SectorsPerTrack)) / f->SectorsPerTrack);
-	*sector = ((lba % (2 * f->SectorsPerTrack)) % f->SectorsPerTrack + 1);
+	unsigned short head;
+	unsigned short cylinder;
+	unsigned short sector;
+};
+void lbachs(unsigned lba, chs *buf, floppyDrv* f)
+{
+	buf->cylinder = lba / (2 * f->SectorsPerTrack);
+	buf->head = ((lba % (2 * f->SectorsPerTrack)) / f->SectorsPerTrack);
+	buf->sector = ((lba % (2 * f->SectorsPerTrack)) % f->SectorsPerTrack + 1);
 }
 int initfDrive(int n, floppyDrv* f)
 {

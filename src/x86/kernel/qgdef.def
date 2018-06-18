@@ -1,6 +1,6 @@
 #pragma once
+#include<qzstd.hpp>
 #define IGNORE_DEFAULT_IH
-#define VECTOR_NOT_IMPLEMENTED
 #define PIC1_ADDR 0x20
 #define PIC2_ADDR 0x28
 #define forceinline __forceinline

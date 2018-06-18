@@ -1,12 +1,15 @@
 #pragma once
+#include"stdio.hpp"
 //Devices
 
-//VGA in text mode.
-#define VGATEXTMODE 0xF0000000
+//Paging, descriptor tables, etc.
+#define PCX86 0xF0000010
+//VGA Terminal
+#define VGATEXTMODE 0xF0000015
 //Test non-conditional error device.
-#define FAULTDEVICE 0xF0000001
-//Memory manager, paging, etc.
-#define PCX86 0xF0000002
+#define FAULTDEVICE 0xF0000020
 //Storage.
-#define PCSTORAGE 0xF0000003
-unsigned long long _getDevAttr(unsigned dev, unsigned n);
+#define PCSTORAGE 0xF00000025
+
+
+FILE *_getDevFile(unsigned dev, FILE *buf);

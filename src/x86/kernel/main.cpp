@@ -3,23 +3,36 @@ extern void _cdecl initglobal();
 #include"deviceproc.hpp"
 #include"video.hpp"
 #include<string.hpp>
+#include<krnlio.hpp>
 #include<stdio.hpp>
 #include"power.hpp"
 #include"pcdevice.hpp"
 #include"mmngr.hpp"
 #include"storage.hpp"
+#include<stdio.hpp>
 #include"syscall.hpp"
 #include<math.hpp>
 _deverr res;
-#define PHYSICAL_MEMORY_SIZE 4096
-int PCX86_PAR[1] = { PHYSICAL_MEMORY_SIZE };
-unsigned long long VGA_DEV_ATTR[] = { 0xB8000, 0x10, 80, 25 };
+unsigned int PHYSICAL_MEMORY_SIZE = 4096;
+unsigned long long VGA_DEV_ATTR[] = { 0xB8000, 16, 80, 25 };
+unsigned long long PC_DEV_ATTR[] = { PHYSICAL_MEMORY_SIZE };
 #pragma warning(disable:4731)
 #define DEFAULT_OUTPUT_DEVICE VGATEXTMODE
+void _checkDefOutput()
+{
+	static extendDevInfo def_out_dev;
+	if (getDev(DEFAULT_OUTPUT_DEVICE, &def_out_dev)->devState != CONFIGURED_AND_INSTALLED)
+	{
+		//stdout=...uh...
+		//Nevermind. Just use other output devices, for now devices such as, black hole radiation.
+	}
+}
+#include<unistd.hpp>
 void main()
 {
 	_asm
 	{
+		xchg bx, bx
 		mov ax, 0x08
 		mov ds, ax
 		mov es, ax
@@ -30,41 +43,41 @@ void main()
 		mov ebp, esp
 	}
 	initglobal();
-	extern devinfo *loadeddev;
-	memset(loadeddev, 0, sizeof(devinfo)*MAXDEVICES);
-	installdev(PCX86, initPcStdRoutines, 0, PCX86_PAR, 0);
-	installdev(VGATEXTMODE, videoinit, 0, 0, VGA_DEV_ATTR);
-	installdev(PCSTORAGE, initStorage, deinitStorage, 0, 0);
-	//installdev(FAULTDEVICE, faultdev, 0, 0);
+	extern volatile devinfo *loadeddev;
+	memset((void*)loadeddev, 0, sizeof(devinfo)*MAXDEVICES);
+	configDev(VGATEXTMODE, videoinit, 0, VGA_DEV_ATTR);
+	configDev(PCX86, initPcStdRoutines, 0, PC_DEV_ATTR);
 	memset(&res, 0, sizeof(_deverr));
 	initdevices(&res);
-	setint(0x90, sysCallIntHandler, DEFIRQATTR);
-	if (devinstallstate(DEFAULT_OUTPUT_DEVICE) != CONFIGURED_AND_INSTALLED)
+	refreshStdioStream();
+	if (!res.count)
 	{
-		//stdout=...uh...
-		//Nevermind. Just use other output devices, for now devices such as, black hole radiation.
+		configDev(PCSTORAGE, (int(*)(extendDevInfo*))(initStorage), deinitStorage, 0);
+		initdevices(&res);
 	}
-	puts("Quartz Operating System\n");
-	if (res.count)//Check if there is errors
+	_checkDefOutput();
+	puts("Quartz Operating System");
+	if (res.count)
 	{
 		printf("[Fatal Error] >>> Initialization of following %d device/s failed:\n", res.count);
 		for (size_t i = 0; i < res.count; i++)
 		{
-			printf("Device : %x - Reported error code : %d\n", res.err[i].__dev, res.err[i].__err);
+			extendDevInfo *__di = getDev(res.err->__dev, __di);
+			if (__di->devName)
+				printf("%s (Device-ID:%x) - Reported error code : %x\n", __di->devName, res.err[i].__dev, res.err[i].__err);
+			else printf("Device-ID:%x - Reported error code : %x\n", res.err[i].__dev, res.err[i].__err);
 		}
 	}
-	//TODO:
-	//Something with printf() or va_list is really bad, e.g. corrupts stack.
-	//Floating point results to invalid opcode.
-	//Execution
-	//Something like RunFile("A:\system\qshell", arg_foo, arg_bar)...
+	else
+	{
+		//TODO:
+		//Read blocks from floppy
+
+		//Execution
+
+		//Something like RunFile("A:\system\qshell", arg_foo, arg_bar)...
+
+	}
 	//Deinitalization routines, kernel exiting.
-	//_asm int 85
-inf:
-	extern unsigned cvtxp, cvtyp;
-	cvtxp = 10;
-	cvtyp = 10;
-	printf("Current tick : %d", _tckc[0]);
-	goto inf;
 	powerprocedure(res.count);
 }

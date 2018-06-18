@@ -1,16 +1,15 @@
 #include"krnlio.hpp"
-
-unsigned long long _getDevAttr(unsigned dev, unsigned n)
+#include"stdio.hpp"
+FILE *_getDevFile(unsigned dev, FILE *buf)
 {
-	unsigned long long _ret;
+	FILE *_ret;
 	_asm
 	{
-		mov eax, 4
+		mov eax, 8
 		mov ebx, [dev]
-		mov ecx, [n]
+		mov ecx, [buf]
 		int 0x90
 		mov dword ptr[_ret], eax
-		mov dword ptr[_ret+4], edx
 	}
 	return _ret;
 }

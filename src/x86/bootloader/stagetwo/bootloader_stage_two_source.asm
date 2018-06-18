@@ -80,13 +80,13 @@ pmain:
     call waitinkey
     mov al, 0xAE
     out 0x64, al
-    call waitinkey; Blyatifully waiting for this to finish
+    call waitinkey;
     ;	PE execution routine
     mov ebx, 0x10028 ;Base=0x10000 + 0x18=Size of IMAGE_FILE_HEADER + 0x10=Offset to the entry point
     add ebx, [0x1003C] ;Base+0x3C=LFA_NEW
-    mov ebp, 0x10000
-    add ebp, dword [ebx]
-    jmp dword [ebp]
+	mov ebp, 0x10000
+	add ebp, dword [ebx]
+	jmp ebp
     ;	ELF execution routine
     ;mov edi, 0x10004 ;Base=0x10000 + 0x4=p_offset
     ;add edi, dword ptr[0x1001C] ;Base=0x10000 + 0x1C=Program header table position

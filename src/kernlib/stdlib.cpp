@@ -6,10 +6,6 @@ int _itoa(unsigned int value, char* buf, unsigned base)
 	unsigned i = 0;
 	while (value)
 	{
-		/*
-		65003
-		3
-		*/
 		unsigned t = value % base;
 		if (t > 9)
 		{
@@ -21,19 +17,8 @@ int _itoa(unsigned int value, char* buf, unsigned base)
 		}
 		buf[i++] = (char)t;
 		value /= base;
-		_asm
-		{
-			push eax
-			push ecx
-			mov ecx, [t]
-			mov eax, [buf]
-			xchg bx, bx
-			pop ecx
-			pop eax
-		}
 	}
 	buf[i] = 0;
-	_asm xchg bx, bx
 	strrev(buf);
 	return i;
 }

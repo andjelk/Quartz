@@ -22,27 +22,32 @@ Memory map
   <tr>
     <td>`0x00005500`</td>
     <td>`0x00007C00`</td>
-    <td>Reserved for system stack<br></td>
+    <td>Reserved for system stack</td>
   </tr>
   <tr>
     <td>`0x00007C00`</td>
     <td>`0x00010000`</td>
-    <td>* Bootsector<br>* Bootloader (stage 2)<br>* Devices information block (Max devices 1408)<br></td>
+    <td>* Bootsector<br>* Bootloader (stage 2)<br>* Devices information block (Max devices 1408)</td>
   </tr>
   <tr>
     <td>`0x00010000`<br></td>
     <td>`0x00050000`<br></td>
-    <td>Reserved for kernel image<br></td>
+    <td>Reserved for kernel image</td>
   </tr>
   <tr>
-    <td>`0x00050000`</td>
+    <td>`0x00050080`</td>
     <td>`0x00050080`</td>
     <td>Initializers</td>
   </tr>
   <tr>
+    <td>`0x00050080`</td>
+    <td>`0x00061E80`</td>
+    <td>Extended devices information block</td>
+  </tr>
+  <tr>
     <td>`0x0009FC00`<br></td>
     <td>`0x000A0000`</td>
-    <td>EBDA BIOS reserved<br></td>
+    <td>EBDA BIOS reserved</td>
   </tr>
   <tr>
     <td>`0x000A8000`</td>
@@ -57,6 +62,6 @@ This is a requirement for vanity of this memory map overall.
 
 All physical memory starting from `0x00100000` is managed by the memory manager.
 
-Last edited for `build_2`.
+Last edited for `build_3`.
 
 **Luka Andjelkovic**
